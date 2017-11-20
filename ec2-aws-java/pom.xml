@@ -3,11 +3,23 @@
   <groupId>com.amazonaws</groupId>
   <artifactId>samples</artifactId>
   <version>1.0.0</version>
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
   <dependencies>
     <dependency>
       <groupId>com.amazonaws</groupId>
       <artifactId>aws-java-sdk</artifactId>
-      <version>1.11.232</version>
+      <version>1.11.224</version>
       <scope>compile</scope>
     </dependency>
     <dependency>
