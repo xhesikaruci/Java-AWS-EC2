@@ -14,19 +14,29 @@ public class MainFrameGui {
             tabbedPane.addTab(label, component);
         }
 
+        public MainFrameGui(){
+            JFrame frame = new JFrame("Tabbed Pane Sample");
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setSize(500,500);
+
+            JTabbedPane tabbedPane = new JTabbedPane();
+            tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
+            add(tabbedPane, "EC2",new Button("otot"));
+            add(tabbedPane, "S3",s3Panel.panel);
+
+
+            frame.add(tabbedPane, BorderLayout.CENTER);
+            frame.setVisible(true);
+        }
+
     public static void main(String[] args) {
-        JFrame frame = new JFrame("Tabbed Pane Sample");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500,500);
 
-        JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        add(tabbedPane, "EC2",new Button("otot"));
-        add(tabbedPane, "S3",s3Panel.panel);
-
-
-        frame.add(tabbedPane, BorderLayout.CENTER);
-        frame.setVisible(true);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                new MainFrameGui();
+            }
+        });
     }
 
 
