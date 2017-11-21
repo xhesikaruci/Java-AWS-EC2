@@ -11,8 +11,6 @@ import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -20,23 +18,22 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 
 public class S3Panel {
-    static JSplitPane splitPane ;
+    static JSplitPane splitPane;
     JButton button = new JButton("toto");
-    static JList<String> list;
+    static JList<FileFromAws> list;
     static JScrollPane listPane;
     JTextArea textView = new JTextArea();
     JScrollPane textScroll;
-    JPanel panel ;
-    ArrayList<String> bucketList = new ArrayList<>();
-    static DefaultListModel<String> model = new DefaultListModel<>();
-    static Hashtable<String,String> hashtable = new Hashtable<>();
-    static Hashtable<String,ArrayList<String>> bucketStructure = new Hashtable<>();
+    JPanel panel;
+    static DefaultListModel<FileFromAws> model = new DefaultListModel<>();
+    static Hashtable<String, String> locationsForBucket = new Hashtable<>();
+    static Hashtable<FileFromAws, String> objectLocations;
+    static Hashtable<String, ArrayList<String>> bucketStructure = new Hashtable<>();
+    static ArrayList<FileFromAws> bucketList = new ArrayList<>();
 
 
-    public S3Panel (){
-
-
-
+    public S3Panel() {
+        javax.swing.SwingUtilities.invokeLater(this::populateListWithBucketsFromWeb);
         textScroll = new JScrollPane(textView);
         list = new JList<>(model);
         list.setLayoutOrientation(JList.VERTICAL);
@@ -44,154 +41,33 @@ public class S3Panel {
         list.setDragEnabled(true);
 
         listPane = new JScrollPane(list);
-        listPane.getViewport().setViewPosition(new Point(20,20));
-        listPane.setPreferredSize(new Dimension(120,250));
+        listPane.getViewport().setViewPosition(new Point(20, 20));
+        listPane.setPreferredSize(new Dimension(120, 250));
 
-        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT,listPane,new JLabel("select a file to open it here"));
+
+        splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, listPane, new JLabel("select a file to open it here"));
         splitPane.setResizeWeight(.2d);
+        list.setCellRenderer(new FileRenderer());
+        list.addListSelectionListener(arg0 -> {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    if ((!arg0.getValueIsAdjusting()) && list.getSelectedValue().parent == null) {
+                        splitPane.setRightComponent(S3utilities.getInformationAboutBucket(list.getSelectedValue()));
+                    }
+                }
+            });
+
+        });
 
         panel = new JPanel();
-        panel.setLayout(new GridLayout(2,1));
+        panel.setLayout(new GridLayout(2, 1));
         panel.add(splitPane);
         panel.add(button);
-        list.addListSelectionListener(arg0 -> {
-            if (!arg0.getValueIsAdjusting()) {
-                if (!list.getSelectedValue().endsWith("/")) {
-                    if (hashtable.get(list.getSelectedValue()) == null)
-                        getBucketLocation(list.getSelectedValue());
-                    while (hashtable.get(list.getSelectedValue()) == null) {
-
-                    }
-                    splitPane.setRightComponent(getBucketDescription(list.getSelectedValue()));
-                }else{
-                    Integer index=list.getSelectedIndex();
-                    while(list.getModel().getElementAt(index).endsWith("/")){
-                        index--;
-                    }
-                    ArrayList<String> files = bucketStructure.get(list.getModel().getElementAt(index));
-                    for (String s:files
-                         ) {
-                        if ((!s.endsWith("/")) && s.startsWith(list.getSelectedValue().split(" ")[list.getSelectedValue().split(" ").length-1])){
-                            System.out.println(list.getSelectedValue());
-                            model.add(list.getSelectedIndex()+1,s);
-                        }
-                    }
-                }
-            }
-        });
-
-        listBucket();
-
-
     }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    public JPanel getBucketDescription(String name){
-        JPanel panel = new JPanel();
-        AWSCredentials credentials = null;
-        try {
-            credentials = new ProfileCredentialsProvider("default").getCredentials();
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "something went wrong with your credentials",
-                    e);
-        }
-        AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withRegion(hashtable.get(name))
-                .build();
-
-
-
-        int size = 0;
-        int numberOfFiles = 0;
-
-        ObjectListing listing = s3.listObjects( name );
-        java.util.List<S3ObjectSummary> summaries = listing.getObjectSummaries();
-        for (S3ObjectSummary s: summaries
-                ) {
-            System.out.println(s);
-            size+=s.getSize();
-            numberOfFiles++;
-        }
-
-        panel.add(new JLabel("Size: "+ size));
-        panel.add(new JLabel("number of objects: "+ numberOfFiles));
-        panel.setLayout(new BoxLayout(panel,BoxLayout.Y_AXIS));
-        JButton openButton = new JButton("Open this bucket");
-        JButton deleteButton = new JButton("Delete this bucket");
-
-        openButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent actionEvent) {
-                Integer currentIndex =list.getSelectedIndex();
-                ArrayList<String> filesAndFolders = new ArrayList<>();
-                for (S3ObjectSummary s: summaries
-                        ) {
-                    filesAndFolders.add(s.getKey());
-                    if (s.getKey().endsWith("/")){
-                        model.add(currentIndex+1,"     "+s.getKey());
-                    }
-                }
-                bucketStructure.put(name,filesAndFolders);
-            }
-        });
-
-
-        panel.add(openButton);
-        panel.add(deleteButton);
-
-
-        return panel;
-    }
-
-
-
-    public String[] listBucket() {
-        AWSCredentials credentials = null;
-        try {
-            credentials = new ProfileCredentialsProvider("default").getCredentials();
-        } catch (Exception e) {
-            throw new AmazonClientException(
-                    "something went wrong with your credentials",
-                    e);
-        }
-        AmazonS3 s3 = AmazonS3ClientBuilder.standard()
-                .withCredentials(new AWSStaticCredentialsProvider(credentials))
-                .withRegion("us-west-2")
-                .build();
-
-        ArrayList<String> buckets = new ArrayList<>();
-        for (Bucket bucket : s3.listBuckets()) {
-                System.out.println(bucket.getName());
-                buckets.add(bucket.getName());
-                model.addElement(bucket.getName());
-        }
-
-        String[] result=new String[buckets.size()];
-        result=buckets.toArray(result);
-        bucketList=buckets;
-
-        return result;
-
-    }
-
-    void getBucketLocation(String name){
+    void populateListWithBucketsFromWeb() {
+        model.clear();
         AWSCredentials credentials = null;
         try {
             credentials = new ProfileCredentialsProvider("default").getCredentials();
@@ -205,8 +81,42 @@ public class S3Panel {
                 .withRegion("eu-west-1")
                 .build();
 
-        hashtable.put(name,s3.getBucketLocation(name));
+        FileFromAws file = null;
+
+        for (Bucket b : s3.listBuckets()
+                ) {
+            file = new FileFromAws(b.getName(), "");
+            model.addElement(file);
+            bucketList.add(file);
+        }
     }
+
+    void populateListWithBucketsFromCache() {
+        model.clear();
+        for (FileFromAws f : bucketList
+                ) {
+            model.addElement(f);
+        }
+
+    }
+
+
+    void removeAllChildren(FileFromAws file) {
+        ArrayList<Integer> toRemove = new ArrayList<>();
+        for (int i = 0; i < model.size(); i++) {
+            if (model.get(i).type.equals("folder") && model.get(i).parent.equals(file.name)) {
+                removeAllChildren(model.get(i));
+            }
+            if (model.get(i).parent.equals(file.name)) {
+                toRemove.add(i);
+            }
+        }
+        for (int i = toRemove.size() - 1; i > -1; i--) {
+            model.remove(toRemove.get(i));
+        }
+        //TODO
+    }
+
 
 }
 
