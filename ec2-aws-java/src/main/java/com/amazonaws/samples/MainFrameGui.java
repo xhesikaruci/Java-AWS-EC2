@@ -7,10 +7,11 @@ public class MainFrameGui {
 
         static Color colors[] = { Color.RED, Color.ORANGE, Color.YELLOW, Color.GREEN, Color.BLUE,
                 Color.MAGENTA };
+        static S3Panel s3Panel = new S3Panel();
 
-        static void add(JTabbedPane tabbedPane, String label) {
+        static void add(JTabbedPane tabbedPane, String label,Component component) {
             //add the specific parts for ec2 and s3 here
-            tabbedPane.addTab(label, null);
+            tabbedPane.addTab(label, component);
         }
 
     public static void main(String[] args) {
@@ -20,10 +21,9 @@ public class MainFrameGui {
 
         JTabbedPane tabbedPane = new JTabbedPane();
         tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-        String titles[] = { "EC2", "S3"};
-        for (int i = 0, n = titles.length; i < n; i++) {
-            add(tabbedPane, titles[i]);
-        }
+        add(tabbedPane, "EC2",new Button("otot"));
+        add(tabbedPane, "S3",s3Panel.panel);
+
 
         frame.add(tabbedPane, BorderLayout.CENTER);
         frame.setVisible(true);
