@@ -19,7 +19,6 @@ import java.util.Hashtable;
 
 public class S3Panel {
     static JSplitPane splitPane;
-    JButton button = new JButton("toto");
     static JList<FileFromAws> list;
     static JScrollPane listPane;
     JTextArea textView = new JTextArea();
@@ -61,9 +60,9 @@ public class S3Panel {
         });
 
         panel = new JPanel();
-        panel.setLayout(new GridLayout(2, 1));
+        panel.setLayout(new GridLayout(1, 1));
         panel.add(splitPane);
-        panel.add(button);
+
     }
 
     void populateListWithBucketsFromWeb() {
