@@ -11,11 +11,13 @@ public class MainFrameGui {
 
         static void add(JTabbedPane tabbedPane, String label,Component component) {
             //add the specific parts for ec2 and s3 here
+
             tabbedPane.addTab(label, component);
+
         }
 
         public MainFrameGui(){
-            JFrame frame = new JFrame("Tabbed Pane Sample");
+            JFrame frame = new JFrame("AWS manager");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.setSize(500,500);
 

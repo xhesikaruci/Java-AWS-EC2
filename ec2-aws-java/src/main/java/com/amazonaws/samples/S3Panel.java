@@ -12,8 +12,12 @@ import com.amazonaws.services.s3.model.S3ObjectSummary;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Hashtable;
 
@@ -24,11 +28,10 @@ public class S3Panel {
     JTextArea textView = new JTextArea();
     JScrollPane textScroll;
     JPanel panel;
+    static Hashtable<String,java.util.List<S3ObjectSummary>> infos = new Hashtable<>();
     static DefaultListModel<FileFromAws> model = new DefaultListModel<>();
-    static Hashtable<String, String> locationsForBucket = new Hashtable<>();
-    static Hashtable<FileFromAws, String> objectLocations;
-    static Hashtable<String, ArrayList<String>> bucketStructure = new Hashtable<>();
     static ArrayList<FileFromAws> bucketList = new ArrayList<>();
+
 
 
     public S3Panel() {
@@ -52,12 +55,36 @@ public class S3Panel {
                 @Override
                 public void run() {
                     if ((!arg0.getValueIsAdjusting()) && list.getSelectedValue().parent == null) {
-                        splitPane.setRightComponent(S3utilities.getInformationAboutBucket(list.getSelectedValue()));
+                        splitPane.setRightComponent(new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                                S3utilities.getInformationAboutBucket(list.getSelectedValue()),null));
                     }
                 }
             });
 
         });
+
+        list.addMouseListener(new MouseListener(){
+                public void mouseClicked(MouseEvent e)
+                {
+                    JList theList = (JList) e.getSource();
+                    if (e.getClickCount() == 2)
+                    {
+                        int index = theList.locationToIndex(e.getPoint());
+                        if (index >= 0)
+                        {
+                            Object o = theList.getModel().getElementAt(index);
+                            System.out.println("Double-clicked on: " + o.toString());
+                            if (infos.get(o.toString())!=null)
+                                S3utilities.displayChildren((FileFromAws) o,infos.get(o.toString()));
+                            else
+                                S3utilities.displayChildren((FileFromAws) o,infos.get(((FileFromAws) o).parent));
+
+                        }
+                    }
+                }
+
+        });
+
 
         panel = new JPanel();
         panel.setLayout(new GridLayout(1, 1));

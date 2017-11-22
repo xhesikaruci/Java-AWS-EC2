@@ -21,7 +21,8 @@ public class FileRenderer extends JLabel implements ListCellRenderer<FileFromAws
 
 
 
-        setText("<html>"+stringToDisplay+" <img src=\"file:"+fileFromAws.icon+"\">&emsp;"+fileFromAws.name+"</html>");
+        setText("<html>"+stringToDisplay+" <img src=\"file:"+fileFromAws.icon+"\">&emsp;"+
+                fileFromAws.name.split("/")[fileFromAws.name.split("/").length-1]+"</html>");
 
 
 

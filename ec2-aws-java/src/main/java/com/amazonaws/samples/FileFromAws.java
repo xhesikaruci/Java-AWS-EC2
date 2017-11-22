@@ -14,13 +14,14 @@ public class FileFromAws {
     public String icon = null;
     public String type = null;
     public boolean isOpen = false;
+    public String parentBucket =null;
 
     //This creator is used to create a bucket
     public FileFromAws(String name, String region) {
         this.name = name;
         this.region = region;
         this.degree = 0;
-        this.type = "folder";
+        this.type = "bucket";
 
         this.icon = "folder.png";
 
@@ -29,10 +30,11 @@ public class FileFromAws {
     }
 
     //creator for file or folder
-    public FileFromAws(String name, String parent, Integer degree, String type) {
+    public FileFromAws(String name, String parent, Integer degree, String type,String parentBucket) {
         this.name = name;
         this.parent = parent;
         this.degree = degree;
+        this.parentBucket=parentBucket;
         BufferedImage img = null;
         if (type.equals("file")) {
             this.icon = "file.png";
