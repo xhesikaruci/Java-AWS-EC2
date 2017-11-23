@@ -249,6 +249,8 @@ public class S3utilities {
         int offset = 1;
         Integer currentIndex = S3Panel.list.getSelectedIndex();
         if (file.type.equals("file")) {
+            S3Panel.splitPane.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+
             if (file.name.endsWith(".txt") || file.name.endsWith(".html") || file.name.endsWith(".sh") ||
                     file.name.endsWith(".bat") || file.name.endsWith(".css") || file.name.endsWith(".js") ||
                     file.name.endsWith(".c") || file.name.endsWith(".h") || file.name.endsWith(".cpp")) {
@@ -256,7 +258,6 @@ public class S3utilities {
 
 
                 AmazonS3 s3 = createClient(getBucketLocation(file.parentBucket));
-
                 S3Object object = s3.getObject(
                         new GetObjectRequest(file.parentBucket, file.name));
                 InputStream objectData = object.getObjectContent();
@@ -370,6 +371,7 @@ public class S3utilities {
                 }
             }
         }
+        S3Panel.splitPane.setCursor(Cursor.getDefaultCursor());
     }
 
     /**
