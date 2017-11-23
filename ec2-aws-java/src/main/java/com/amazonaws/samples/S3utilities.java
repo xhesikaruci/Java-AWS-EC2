@@ -311,7 +311,8 @@ public class S3utilities {
                             }
                             try {
                                 // Create temp file.
-                                File temp = File.createTempFile("pattern", ".suffix");
+                                File temp = File.createTempFile(file.name.split("/")[file.name.split("/").length-1]
+                                        , ".temporary");
 
                                 // Delete temp file when program exits.
                                 temp.deleteOnExit();
