@@ -19,7 +19,7 @@ public class MainFrameGui {
         public MainFrameGui(){
             JFrame frame = new JFrame("AWS manager");
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.setSize(500,500);
+            frame.setSize(1500,1000);
 
             JTabbedPane tabbedPane = new JTabbedPane();
             tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);

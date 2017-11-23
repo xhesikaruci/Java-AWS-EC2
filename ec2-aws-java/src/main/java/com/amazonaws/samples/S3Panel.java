@@ -28,14 +28,15 @@ public class S3Panel {
     JTextArea textView = new JTextArea();
     JScrollPane textScroll;
     JPanel panel;
-    static Hashtable<String,java.util.List<S3ObjectSummary>> infos = new Hashtable<>();
+    static Hashtable<String, java.util.List<S3ObjectSummary>> infos = new Hashtable<>();
     static DefaultListModel<FileFromAws> model = new DefaultListModel<>();
     static ArrayList<FileFromAws> bucketList = new ArrayList<>();
-
+    static String lastFileOpened = "";
+    FileFromAws todelete = null;
 
 
     public S3Panel() {
-        javax.swing.SwingUtilities.invokeLater(this::populateListWithBucketsFromWeb);
+        javax.swing.SwingUtilities.invokeLater(S3utilities::populateListWithBucketsFromWeb);
         textScroll = new JScrollPane(textView);
         list = new JList<>(model);
         list.setLayoutOrientation(JList.VERTICAL);
@@ -54,34 +55,48 @@ public class S3Panel {
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    if ((!arg0.getValueIsAdjusting()) && list.getSelectedValue().parent == null) {
-                        splitPane.setRightComponent(new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-                                S3utilities.getInformationAboutBucket(list.getSelectedValue()),null));
+                    try {
+                        if ((!arg0.getValueIsAdjusting()) && list.getSelectedValue().type.equals("bucket")) {
+                            splitPane.setRightComponent(new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+                                    S3utilities.getInformationAboutBucket(list.getSelectedValue()), null));
+                            for (int i = 0; i < model.getSize(); i++) {
+                                if (model.get(i).type.equals("file"))
+                                    model.get(i).isOpen = false;
+                            }
+
+                        }
+                    }catch (Exception e){
+
                     }
                 }
             });
 
         });
 
-        list.addMouseListener(new MouseListener(){
-                public void mouseClicked(MouseEvent e)
-                {
-                    JList theList = (JList) e.getSource();
-                    if (e.getClickCount() == 2)
-                    {
-                        int index = theList.locationToIndex(e.getPoint());
-                        if (index >= 0)
-                        {
-                            Object o = theList.getModel().getElementAt(index);
-                            System.out.println("Double-clicked on: " + o.toString());
-                            if (infos.get(o.toString())!=null)
-                                S3utilities.displayChildren((FileFromAws) o,infos.get(o.toString()));
-                            else
-                                S3utilities.displayChildren((FileFromAws) o,infos.get(((FileFromAws) o).parent));
+        JPopupMenu menu = new JPopupMenu("Delete");
+        JMenuItem delete = new JMenuItem("Delete");
+        delete.addActionListener(new ActionListener() {
 
-                        }
-                    }
+            @Override
+            public void actionPerformed(ActionEvent arg0) {
+                S3utilities.deleteFile(todelete.name, todelete.parentBucket);
+                populateListWithBucketsFromWeb();
+            }
+        });
+
+        menu.add(delete);
+
+        list.addMouseListener(new MouseListener() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1 && SwingUtilities.isRightMouseButton(e)) {
+                    menu.show(list, e.getX(), e.getY());
+                    todelete = model.get(list.locationToIndex(e.getPoint()));
+                    System.out.println("name: " + todelete.name);
+                    System.out.println("bucket: " + todelete.parentBucket);
+
                 }
+                mouseEvent(e);
+            }
 
         });
 
@@ -94,6 +109,8 @@ public class S3Panel {
 
     void populateListWithBucketsFromWeb() {
         model.clear();
+        infos = new Hashtable<>();
+        bucketList = new ArrayList<>();
         AWSCredentials credentials = null;
         try {
             credentials = new ProfileCredentialsProvider("default").getCredentials();
@@ -126,21 +143,27 @@ public class S3Panel {
 
     }
 
+    private void mouseEvent(MouseEvent e) {
+        JList theList = (JList) e.getSource();
+        if (e.getClickCount() == 2) {
+            int index = theList.locationToIndex(e.getPoint());
+            if (index >= 0) {
+                Object o = theList.getModel().getElementAt(index);
 
-    void removeAllChildren(FileFromAws file) {
-        ArrayList<Integer> toRemove = new ArrayList<>();
-        for (int i = 0; i < model.size(); i++) {
-            if (model.get(i).type.equals("folder") && model.get(i).parent.equals(file.name)) {
-                removeAllChildren(model.get(i));
+                if (((FileFromAws) o).type.equals("file")) {
+                    lastFileOpened = ((FileFromAws) o).name;
+                    System.out.println("last file opened is "+lastFileOpened);
+                }
+
+                if (infos.get(o.toString()) != null) {
+                    S3utilities.displayChildren((FileFromAws) o, infos.get(o.toString()));
+
+                } else
+                    S3utilities.displayChildren((FileFromAws) o, infos.get(((FileFromAws) o).parent));
+
             }
-            if (model.get(i).parent.equals(file.name)) {
-                toRemove.add(i);
-            }
+
         }
-        for (int i = toRemove.size() - 1; i > -1; i--) {
-            model.remove(toRemove.get(i));
-        }
-        //TODO
     }
 
 
