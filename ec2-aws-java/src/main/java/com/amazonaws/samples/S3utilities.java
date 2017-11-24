@@ -103,9 +103,9 @@ public class S3utilities {
                 ArrayList<String> folders = new ArrayList<>();
                 folders.add("");
                 System.out.println(name.getText());
-                for (S3ObjectSummary s:S3Panel.infos.get(name.getText().split(" ")[name.getText().split(" ").length-1])
-                     ) {
-                    if (s.getKey().endsWith("/")){
+                for (S3ObjectSummary s : S3Panel.infos.get(name.getText().split(" ")[name.getText().split(" ").length - 1])
+                        ) {
+                    if (s.getKey().endsWith("/")) {
                         folders.add(s.getKey());
                     }
                 }
@@ -116,9 +116,9 @@ public class S3utilities {
                         folders.toArray(), // Array of choices
                         folders.toArray()[0]); // Initial choice
                 //if there is an answer, upload the file previously chosen
-                if (input!=null){
-                    uploadFileToBucket(name.getText().split(" ")[name.getText().split(" ").length-1],
-                            input+file.getName(),file.getAbsolutePath());
+                if (input != null) {
+                    uploadFileToBucket(name.getText().split(" ")[name.getText().split(" ").length - 1],
+                            input + file.getName(), file.getAbsolutePath());
                     populateListWithBucketsFromWeb();
                 }
 
@@ -237,9 +237,9 @@ public class S3utilities {
 
     static void displayFile(FileFromAws file, java.util.List<S3ObjectSummary> summaries) {
         FileFromAws bucket = null;
-        for (FileFromAws f:S3Panel.bucketList
-             ) {
-            if (f.name.equals(file.parentBucket)){
+        for (FileFromAws f : S3Panel.bucketList
+                ) {
+            if (f.name.equals(file.parentBucket)) {
                 bucket = f;
                 break;
             }
@@ -284,9 +284,9 @@ public class S3utilities {
                         @Override
                         public void actionPerformed(ActionEvent actionEvent) {
                             JFileChooser jf = new JFileChooser();
-                            int returnValue =jf.showSaveDialog(null);
-                            if (returnValue == JFileChooser.APPROVE_OPTION){
-                                downLoadFileAndWrite(jf.getSelectedFile().getAbsolutePath(),s3,file);
+                            int returnValue = jf.showSaveDialog(null);
+                            if (returnValue == JFileChooser.APPROVE_OPTION) {
+                                downLoadFileAndWrite(jf.getSelectedFile().getAbsolutePath(), s3, file);
                             }
 
                         }
@@ -303,7 +303,7 @@ public class S3utilities {
                         public void actionPerformed(ActionEvent actionEvent) {
                             S3Object stringObject = new S3Object();
                             System.out.println(textArea.getText());
-                            InputStream stream=null;
+                            InputStream stream = null;
 
                             try {
                                 stream = new ByteArrayInputStream(textArea.getText().getBytes(StandardCharsets.UTF_8.name()));
@@ -312,7 +312,7 @@ public class S3utilities {
                             }
                             try {
                                 // Create temp file.
-                                File temp = File.createTempFile(file.name.split("/")[file.name.split("/").length-1]
+                                File temp = File.createTempFile(file.name.split("/")[file.name.split("/").length - 1]
                                         , ".temporary");
 
                                 // Delete temp file when program exits.
@@ -322,10 +322,9 @@ public class S3utilities {
                                 BufferedWriter out = new BufferedWriter(new FileWriter(temp));
                                 out.write(textArea.getText());
                                 out.close();
-                                s3.putObject(new PutObjectRequest(file.parentBucket,S3Panel.lastFileOpened,temp));
+                                s3.putObject(new PutObjectRequest(file.parentBucket, S3Panel.lastFileOpened, temp));
                             } catch (IOException e) {
                             }
-
 
 
                         }
@@ -385,7 +384,7 @@ public class S3utilities {
     }
 
 
-    static void downLoadFileAndWrite(String path,AmazonS3 s3,FileFromAws file){
+    static void downLoadFileAndWrite(String path, AmazonS3 s3, FileFromAws file) {
         S3Object object = s3.getObject(
                 new GetObjectRequest(file.parentBucket, file.name));
         InputStream in = object.getObjectContent();
@@ -398,8 +397,7 @@ public class S3utilities {
             e.printStackTrace();
         }
         try {
-            while( (count = in.read(buf)) != -1)
-            {
+            while ((count = in.read(buf)) != -1) {
                 out.write(buf, 0, count);
             }
             out.close();
