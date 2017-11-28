@@ -23,7 +23,7 @@ public class MainFrameGui {
 
             JTabbedPane tabbedPane = new JTabbedPane();
             tabbedPane.setTabLayoutPolicy(JTabbedPane.SCROLL_TAB_LAYOUT);
-            add(tabbedPane, "EC2",new Button("otot"));
+            add(tabbedPane, "EC2",new cloud_GUI().contentPane);
             add(tabbedPane, "S3",s3Panel.panel);
 
 

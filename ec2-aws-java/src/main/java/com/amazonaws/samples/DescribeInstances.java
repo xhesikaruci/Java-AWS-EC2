@@ -1,5 +1,9 @@
 package com.amazonaws.samples;
 
+import com.amazonaws.AmazonClientException;
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.AWSStaticCredentialsProvider;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2ClientBuilder;
 import com.amazonaws.services.ec2.model.DescribeInstancesRequest;
@@ -12,39 +16,48 @@ import com.amazonaws.services.ec2.model.Reservation;
  */
 public class DescribeInstances
 {
-    public static void main(String[] args)
+    public  String[] main(String region)
     {
-        final AmazonEC2 ec2 = AmazonEC2ClientBuilder.defaultClient();
-        boolean done = false;
+       AWSCredentials credentials = null;
+       try {
+	      credentials = new ProfileCredentialsProvider("default").getCredentials();
+       } catch (Exception e) {
+           throw new AmazonClientException(
+                   "Cannot load the credentials from the credential profiles file. " +
+                   "Please make sure that your credentials file is at the correct " +
+                   "location (C:\\Users\\Kristi.KristianKuro-PC\\.aws\\credentials), and is in valid format.",
+                   e);
+       }
+       
+       AmazonEC2 ec2 = AmazonEC2ClientBuilder.standard()
+               .withCredentials(new AWSStaticCredentialsProvider(credentials))
+               .withRegion(region)
+               .build();
 
-        while(!done) {
-            DescribeInstancesRequest request = new DescribeInstancesRequest();
-            DescribeInstancesResult response = ec2.describeInstances(request);
-            
-
+       DescribeInstancesRequest request = new DescribeInstancesRequest();
+       int i=0;
+            DescribeInstancesResult response = ec2.describeInstances(request);  
+           String[] description = new String[10];
+        
+           
             for(Reservation reservation : response.getReservations()) {
+            	
                 for(Instance instance : reservation.getInstances()) {
-                    System.out.printf(
-                        "Found reservation with id %s, " +
-                        "AMI %s, " +
-                        "type %s, " +
-                        "state %s " +
-                        "and monitoring state %s\n",
-                        instance.getInstanceId(),
-                        instance.getImageId(),
-                        instance.getInstanceType(),
-                        instance.getState().getName(),
-                        instance.getMonitoring().getState());
-                    
-             
+
+                      description[i]=  instance.getInstanceId() + "  Type:" + instance.getInstanceType() + "  Status:" + instance.getState().getName()+ "  Monitoring status:" + instance.getMonitoring().getState();
+                      i++;	
+
                 }
+                
+                System.out.println(description[i]);
             }
 
             request.setNextToken(response.getNextToken());
-
+         
+	
             if(response.getNextToken() == null) {
-                done = true;
+               // done = true;
             }
+            return description;
         }
     }
-}
